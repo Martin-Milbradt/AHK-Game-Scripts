@@ -73,7 +73,12 @@ ChangeSpeed(value)
         delay = 1
     }
     if (!mute) {
-        pitch := 1500-delay*50
+        if (delay > 20) {
+            pitch := 100+400/(delay-19)
+        }
+        Else {
+            pitch := 1500-delay*50
+        }
         SoundBeep, %pitch%
     }
     Return
