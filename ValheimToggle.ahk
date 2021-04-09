@@ -10,7 +10,9 @@ SetMouseDelay,30
 ListLines,Off
 
 ; Set general configuration from config
-IniRead, delay, %configFile%, General, initialDelay
+IniRead, wait, %configFile%, General, waitBeforeRepeat
+global wait=wait
+IniRead, delay, %configFile%, General, clickDelay
 global delay=delay
 IniRead, mute, %configFile%, General, startMuted
 global mute=mute
@@ -44,17 +46,16 @@ AutoClick:
     clicking := !clicking
     While(clicking){
         Click
-        clickDelay := 100*delay
-        Sleep, %clickDelay%
+        Sleep, %delay%
     }
     Return
 
 ClickFaster:
-    ChangeSpeed(1)
+    ChangeSpeed(100)
     Return
 
 ClickSlower:
-    ChangeSpeed(-1)
+    ChangeSpeed(-100)
     Return
 
 AutoRun:
@@ -82,6 +83,9 @@ Mute:
 
 ToggleAutoClickHold:
     global autoClickHold := !autoClickHold
+    if(muted) {
+        Return
+    }
     if(autoClickHold)
     {
         SoundBeep, 500
@@ -104,7 +108,7 @@ ToggleAutoClickHold:
     Return
 
 ~e::
-    Sleep, 100
+    Sleep, %wait%
     While(GetKeyState("e","P")){
         Send e
         Sleep, 25
@@ -115,11 +119,19 @@ ToggleAutoClickHold:
     running := False
     Return
 
+~s::
+    if (!running) {
+        Return
+    }
+    Send {w up}
+    running := False
+    Return
+
 AutoClick() {
+    Sleep, %wait%
     While(GetKeyState("LButton","P")){
-        clickDelay := 100*delay
-        Sleep, %clickDelay%
         Click
+        Sleep, %delay%
     }
     Return
 }
@@ -127,17 +139,19 @@ AutoClick() {
 ChangeSpeed(value)
 {
     delay -= %value%
-    if (delay < 1) {
-        delay = 1
+    if (delay < 100) {
+        delay = 100
     }
-    if (!muted) {
-        if (delay > 20) {
-            pitch := 100+400/(delay-19)
-        }
-        Else {
-            pitch := 1500-delay*50
-        }
-        SoundBeep, %pitch%
+    if(muted) {
+        Return
     }
+
+    if (delay > 2000) {
+        pitch := 100+40000/(delay-1900)
+    }
+    Else {
+        pitch := 1500-delay/2
+    }
+    SoundBeep, %pitch%
     Return
 }
