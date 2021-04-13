@@ -59,7 +59,8 @@ ClickSlower:
     Return
 
 AutoRun:
-    if(running := !running){
+    global running := !running
+    if(running){
         Send {w down}
     }
     else{
@@ -103,7 +104,7 @@ ToggleAutoClickHold:
     if (autoClickHold) {
         AutoClick()
     } Else {
-        Clicking := False
+        clicking := False
     }
     Return
 
@@ -116,16 +117,25 @@ ToggleAutoClickHold:
     Return
 
 ~w::
-    running := False
+   StopRunning()
+    Return
+
+~Tab::
+    clicking := False
     Return
 
 ~s::
+    StopRunning()
+    Return
+
+StopRunning() {
     if (!running) {
         Return
     }
     Send {w up}
     running := False
     Return
+}
 
 AutoClick() {
     Sleep, %wait%
