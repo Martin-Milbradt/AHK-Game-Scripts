@@ -4,39 +4,32 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #NoTrayIcon
 #MaxThreadsPerHotkey 2
-configFile := "Config.ini"
+global configFile := "config.ini"
+global defaultConfigFile := "config.default.ini"
 SetTitleMatchMode 3
 SetMouseDelay,30
 ListLines,Off
 
-; Set general configuration from config
-IniRead, wait, %configFile%, General, waitBeforeRepeat
-global wait=wait
-IniRead, delay, %configFile%, General, clickDelay
-global delay=delay
-IniRead, mute, %configFile%, General, startMuted
-global mute=mute
-IniRead, autoClickHold, %configFile%, General, autoClickHold
-global autoClickHold=autoClickHold
+global wait = GetConfigValue("waitBeforeRepeat")
+global delay = GetConfigValue("clickDelay")
+global mute = GetConfigValue("startMuted")
+global autoClickHold = GetConfigValue("autoClickHold")
 
-; Set hotkeys from config
 Hotkey, IfWinActive, Valheim
-IniRead, autoClick, %configFile%, Hotkeys, autoClick
-Hotkey, %autoClick%, AutoClick
-IniRead, autoRun, %configFile%, Hotkeys, autoRun
-Hotkey, %autoRun%, AutoRun
-IniRead, mute, %configFile%, Hotkeys, mute
-Hotkey, %mute%, Mute
-IniRead, toggleAutoClickHold, %configFile%, Hotkeys, toggleAutoClickHold
-Hotkey, %toggleAutoClickHold%, ToggleAutoClickHold
-IniRead, clickFaster, %configFile%, Hotkeys, clickFaster
-Hotkey, %clickFaster%, ClickFaster
-IniRead, clickSlower, %configFile%, Hotkeys, clickSlower
-Hotkey, %clickSlower%, ClickSlower
+SetConfigHotkey("autoClick", "AutoClick")
+SetConfigHotkey("autoRun", "AutoRun")
+SetConfigHotkey("mute", "Mute")
+SetConfigHotkey("toggleAutoClickHold", "ToggleAutoClickHold")
+SetConfigHotkey("clickFaster", "ClickFaster")
+SetConfigHotkey("clickSlower", "ClickSlower")
 
 Return
 
 #UseHook ; Prevents scripts from triggering Hotekeys themselves
+
+Test:
+    msgBox it works!
+    return
 
 ScrollLock::
     loop 3
@@ -105,9 +98,12 @@ ToggleAutoClickHold:
 ~LButton::
     if (autoClickHold) {
         AutoClick()
-    } Else {
-        clicking := False
     }
+    clicking := False
+    Return
+
+~RButton::
+    clicking := False
     Return
 
 ~e::
@@ -166,4 +162,20 @@ ChangeSpeed(value)
     }
     SoundBeep, %pitch%
     Return
+}
+
+SetConfigHotkey(keyName, handle) {
+    IniRead, key, %configFile%, Hotkeys, %keyName%
+    if (key == "ERROR") {
+        IniRead, key, %defaultConfigFile%, Hotkeys, %keyName%
+    }
+    Hotkey, %key%, %handle%
+}
+
+GetConfigValue(variableName) {
+    IniRead, value, %configFile%, General, %variableName%
+    if (value == "ERROR") {
+        IniRead, value, %defaultConfigFile%, General, %variableName%
+    }
+    return %value%
 }
