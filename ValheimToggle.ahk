@@ -36,6 +36,8 @@ Hotkey, %clickSlower%, ClickSlower
 
 Return
 
+#UseHook ; Prevents scripts from triggering Hotekeys themselves
+
 ScrollLock::
     loop 3
         SoundBeep,900
@@ -117,7 +119,7 @@ ToggleAutoClickHold:
     Return
 
 ~w::
-   StopRunning()
+    StopRunning()
     Return
 
 ~Tab::
