@@ -27,10 +27,6 @@ Return
 
 #UseHook ; Prevents scripts from triggering Hotekeys themselves
 
-Test:
-    msgBox it works!
-    return
-
 ScrollLock::
     loop 3
         SoundBeep,900
