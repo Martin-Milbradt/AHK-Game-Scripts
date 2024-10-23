@@ -3,10 +3,9 @@
 #NoTrayIcon
 
 #HotIf WinActive("ahk_exe Hearthstone.exe")
-^space:: SpamSpace()
+^space:: SpamSpace() ;Hearthstone: Open booster packs
 
-; Don't use hearthstone's printscreen
-PrintScreen:: {
+PrintScreen:: { ;Hearthstone: Take screenshot with Greenshot
     Send("^{Esc}")
     Send("+{PrintScreen}") ; Greenshot: capture last window
     Send("^{Esc}")
@@ -22,4 +21,4 @@ SpamSpace() {
     }
 }
 
-~Esc:: spam := false
+~Esc:: spam := false ;Hearthstone: Stop opening booster packs
