@@ -1,21 +1,17 @@
-#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-; #Warn  ; Enable warnings to assist with detecting common errors.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #NoTrayIcon
 #MaxThreadsPerHotkey 2
 global configFile := "config.ini"
 global defaultConfigFile := "config.default.ini"
 SetTitleMatchMode 3
-SetMouseDelay,30
-ListLines,Off
+SetMouseDelay 30
+ListLines False
 
-global wait = GetConfigValue("waitBeforeRepeat")
-global delay = GetConfigValue("clickDelay")
-global mute = GetConfigValue("startMuted")
-global autoClickHold = GetConfigValue("autoClickHold")
+global wait := GetConfigValue("waitBeforeRepeat")
+global delay := GetConfigValue("clickDelay")
+global mute := GetConfigValue("startMuted")
+global autoClickHold := GetConfigValue("autoClickHold")
 
-Hotkey, IfWinActive, Valheim
+HotIfWinActive "Valheim"
 SetConfigHotkey("autoClick", "AutoClick")
 SetConfigHotkey("autoRun", "AutoRun")
 SetConfigHotkey("mute", "Mute")
@@ -23,155 +19,168 @@ SetConfigHotkey("toggleAutoClickHold", "ToggleAutoClickHold")
 SetConfigHotkey("clickFaster", "ClickFaster")
 SetConfigHotkey("clickSlower", "ClickSlower")
 
-Return
-
-#UseHook ; Prevents scripts from triggering Hotekeys themselves
+#UseHook
 
 ScrollLock::
+{
     loop 3
-        SoundBeep,900
-    exitApp
-    Return
+        SoundBeep 900
+    ExitApp
+}
 
-AutoClick:
+AutoClick(*)
+{
+    static clicking := false
     clicking := !clicking
     While(clicking){
         Click
-        Sleep, %delay%
+        Sleep delay
     }
-    Return
+}
 
-ClickFaster:
+ClickFaster(*)
+{
     ChangeSpeed(100)
-    Return
+}
 
-ClickSlower:
+ClickSlower(*)
+{
     ChangeSpeed(-100)
-    Return
+}
 
-AutoRun:
+AutoRun(*)
+{
     global running := !running
     if(running){
-        Send {w down}
+        Send "{w down}"
     }
     else{
-        Send {w up}
+        Send "{w up}"
     }
-    Return
+}
 
-Mute:
+Mute(*)
+{
     global muted := !muted
     if(muted)
     {
-        SoundBeep, 900
-        SoundBeep, 500
+        SoundBeep 900
+        SoundBeep 500
     }
     Else
     {
-        SoundBeep, 500
-        SoundBeep, 900
+        SoundBeep 500
+        SoundBeep 900
     }
-    Return
+}
 
-ToggleAutoClickHold:
+ToggleAutoClickHold(*)
+{
     global autoClickHold := !autoClickHold
     if(muted) {
-        Return
+        return
     }
     if(autoClickHold)
     {
-        SoundBeep, 500
-        SoundBeep, 900
+        SoundBeep 500
+        SoundBeep 900
     }
     Else
     {
-        SoundBeep, 900
-        SoundBeep, 500
+        SoundBeep 900
+        SoundBeep 500
     }
-    Return
-
-#IfWinActive Valheim
-~LButton::
-    if (autoClickHold) {
-        AutoClick()
-    }
-    clicking := False
-    Return
-
-~RButton::
-    clicking := False
-    Return
-
-~e::
-    Sleep, %wait%
-    While(GetKeyState("e","P")){
-        Send e
-        Sleep, 25
-    }
-    Return
-
-~w::
-    StopRunning()
-    Return
-
-~Tab::
-    clicking := False
-    Return
-
-~s::
-    StopRunning()
-    Return
-
-StopRunning() {
-    if (!running) {
-        Return
-    }
-    Send {w up}
-    running := False
-    Return
 }
 
-AutoClick() {
-    Sleep, %wait%
+HotIfWinActive "Valheim"
+~LButton::
+{
+    static clicking := false
+    if (autoClickHold) {
+        AutoClick2()
+    }
+    clicking := False
+}
+
+~RButton::
+{
+    static clicking := false
+    clicking := False
+}
+
+~e::
+{
+    Sleep wait
+    While(GetKeyState("e","P")){
+        Send "e"
+        Sleep 25
+    }
+}
+
+~w::StopRunning()
+
+~Tab::
+{
+    static clicking := false
+    clicking := False
+}
+
+~s::StopRunning()
+
+StopRunning()
+{
+    global running
+    if (!running) {
+        return
+    }
+    Send "{w up}"
+    running := False
+}
+
+AutoClick2()
+{
+    Sleep wait
     While(GetKeyState("LButton","P")){
         Click
-        Sleep, %delay%
+        Sleep delay
     }
-    Return
 }
 
 ChangeSpeed(value)
 {
-    delay -= %value%
+    global delay, muted
+    delay -= value
     if (delay < 100) {
-        delay = 100
+        delay := 100
     }
     if(muted) {
-        Return
+        return
     }
 
+    pitch := 0
     if (delay > 2000) {
         pitch := 100+40000/(delay-1900)
     }
     Else {
         pitch := 1500-delay/2
     }
-    SoundBeep, %pitch%
-    Return
+    SoundBeep pitch
 }
 
-SetConfigHotkey(keyName, handle) {
-    IniRead, key, %configFile%, Hotkeys, %keyName%
+SetConfigHotkey(keyName, handle)
+{
+    key := IniRead(configFile, "Hotkeys", keyName, "ERROR")
     if (key == "ERROR") {
-        IniRead, key, %defaultConfigFile%, Hotkeys, %keyName%
+        key := IniRead(defaultConfigFile, "Hotkeys", keyName, "")
     }
-    Hotkey, %key%, %handle%
+    Hotkey key, handle
 }
 
-GetConfigValue(variableName) {
-    IniRead, value, %configFile%, General, %variableName%
+GetConfigValue(variableName)
+{
+    value := IniRead(configFile, "General", variableName, "ERROR")
     if (value == "ERROR") {
-        IniRead, value, %defaultConfigFile%, General, %variableName%
+        value := IniRead(defaultConfigFile, "General", variableName, "")
     }
-    return %value%
+    return value
 }
