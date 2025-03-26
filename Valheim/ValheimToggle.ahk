@@ -8,13 +8,13 @@ ListLines False
 
 global wait := GetConfigValue("waitBeforeRepeat")
 global delay := GetConfigValue("clickDelay")
-global mute := GetConfigValue("startMuted")
+global muted := GetConfigValue("startMuted")
 global autoClickHold := GetConfigValue("autoClickHold")
 
 HotIfWinActive "Valheim"
 SetConfigHotkey("autoClick", "AutoClick")
 SetConfigHotkey("autoRun", "AutoRun")
-SetConfigHotkey("mute", "Mute")
+SetConfigHotkey("muted", "Mute")
 SetConfigHotkey("toggleAutoClickHold", "ToggleAutoClickHold")
 SetConfigHotkey("clickFaster", "ClickFaster")
 SetConfigHotkey("clickSlower", "ClickSlower")
@@ -32,7 +32,7 @@ AutoClick(*)
 {
     static clicking := false
     clicking := !clicking
-    While(clicking){
+    While (clicking) {
         Click
         Sleep delay
     }
@@ -51,10 +51,10 @@ ClickSlower(*)
 AutoRun(*)
 {
     global running := !running
-    if(running){
+    if (running) {
         Send "{w down}"
     }
-    else{
+    else {
         Send "{w up}"
     }
 }
@@ -62,7 +62,7 @@ AutoRun(*)
 Mute(*)
 {
     global muted := !muted
-    if(muted)
+    if (muted)
     {
         SoundBeep 900
         SoundBeep 500
@@ -77,10 +77,10 @@ Mute(*)
 ToggleAutoClickHold(*)
 {
     global autoClickHold := !autoClickHold
-    if(muted) {
+    if (muted) {
         return
     }
-    if(autoClickHold)
+    if (autoClickHold)
     {
         SoundBeep 500
         SoundBeep 900
@@ -111,13 +111,13 @@ HotIfWinActive "Valheim"
 ~e::
 {
     Sleep wait
-    While(GetKeyState("e","P")){
+    While (GetKeyState("e", "P")) {
         Send "e"
         Sleep 25
     }
 }
 
-~w::StopRunning()
+~w:: StopRunning()
 
 ~Tab::
 {
@@ -125,7 +125,7 @@ HotIfWinActive "Valheim"
     clicking := False
 }
 
-~s::StopRunning()
+~s:: StopRunning()
 
 StopRunning()
 {
@@ -140,7 +140,7 @@ StopRunning()
 AutoClick2()
 {
     Sleep wait
-    While(GetKeyState("LButton","P")){
+    While (GetKeyState("LButton", "P")) {
         Click
         Sleep delay
     }
@@ -153,16 +153,16 @@ ChangeSpeed(value)
     if (delay < 100) {
         delay := 100
     }
-    if(muted) {
+    if (muted) {
         return
     }
 
     pitch := 0
     if (delay > 2000) {
-        pitch := 100+40000/(delay-1900)
+        pitch := 100 + 40000 / (delay - 1900)
     }
     Else {
-        pitch := 1500-delay/2
+        pitch := 1500 - delay / 2
     }
     SoundBeep pitch
 }
